@@ -1,0 +1,7 @@
+/**
+ * Arguments provided when creating an Fsw instance
+ * @typedef {Object} Fsw~createOptions
+ * @property {String} address - hostname or IP address to connect to
+ * @property {Number} port - TCP port to connect to
+ * @property {String} secret - freeswitch authentication secret
+ */

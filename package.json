@@ -1,0 +1,44 @@
+{
+  "name": "drachtio-fs-load-balancing-proxy",
+  "version": "0.99.0",
+  "description": "SIP load balancing proxy for freeswitch",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davehorton/drachtio-fs-load-balancing-proxy.git"
+  },
+  "dependencies": {
+    "async": "^1.4.2",
+    "debug": "^2.2.0",
+    "drachtio": "git+ssh://git@github.com:davehorton/drachtio.git",
+    "drachtio-srf": "git+ssh://git@github.com:davehorton/drachtio-srf.git",
+    "lodash": "^3.10.1",
+    "node-noop": "0.0.1",
+    "delegates": "^0.1.0",
+    "modesl": "^1.1.5"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-jshint": "~0.7.2",
+    "grunt-contrib-nodeunit": "*",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-jsdoc": "^1.0.0",
+    "grunt-github-pages": "0.0.4",
+    "jsdoc": ">=3.3.0-*",
+    "minami": "^1.1.1"
+  },  
+  "keywords": [
+    "SIP",
+    "freeswitch",
+    "drachtio"
+  ],
+  "author": "Dave Horton",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davehorton/drachtio-fs-load-balancing-proxy/issues"
+  },
+  "homepage": "https://github.com/davehorton/drachtio-fs-load-balancing-proxy#readme"
+}
