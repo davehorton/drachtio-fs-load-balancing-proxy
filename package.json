@@ -18,7 +18,8 @@
     "lodash": "^3.10.1",
     "node-noop": "0.0.1",
     "delegates": "^0.1.0",
-    "modesl": "^1.1.5"
+    "modesl": "^1.1.5",
+    "range_check": "0.0.5"
   },
   "devDependencies": {
     "grunt": "~0.4.2",
