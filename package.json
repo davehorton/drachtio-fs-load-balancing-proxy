@@ -18,7 +18,7 @@
     "lodash": "^3.10.1",
     "node-noop": "0.0.1",
     "delegates": "^0.1.0",
-    "modesl": "^1.1.5",
+    "modesl": "git+ssh://git@github.com:davehorton/node-esl.git",
     "range_check": "0.0.5"
   },
   "devDependencies": {
