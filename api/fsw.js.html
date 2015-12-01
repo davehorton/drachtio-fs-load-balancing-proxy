@@ -43,10 +43,11 @@
 var esl = require('modesl') ;
 var Emitter = require('events').EventEmitter ;
 var util = require('util') ;
-var noop = require('node-noop').noop;
 var delegate = require('delegates') ;
 var assert = require('assert') ;
 var async = require('async') ;
+require("console-stamp")(console);
+
 
 /**
  * an individual Freeswitch server
@@ -66,6 +67,18 @@ function Fsw(opts) {
   this.port = opts.port ;
   this.secret = opts.secret ;
   this.profile = opts.profile ;
+  this.localAddress = opts.localAddress ;
+  this.online = false ;
+
+  this.max_attempts = null;
+  if (opts.max_attempts &amp;&amp; !isNaN(opts.max_attempts) &amp;&amp; opts.max_attempts > 0) {
+      this.max_attempts = +opts.max_attempts;
+  }
+  this.retry_max_delay = null;
+  if (opts.retry_max_delay !== undefined &amp;&amp; !isNaN(opts.retry_max_delay) &amp;&amp; opts.retry_max_delay > 0) {
+      this.retry_max_delay = opts.retry_max_delay;
+  }  
+  this.initialize_retry_vars() ;
 
   Object.defineProperty( this, 'id', {
     get: function() { 
@@ -81,7 +94,6 @@ function Fsw(opts) {
   }) ;
 
   Emitter.call(this); 
-
 }
 util.inherits(Fsw, Emitter) ;
 
@@ -96,23 +108,22 @@ Fsw.makeId = function(obj) {
  * and begin receving heartbeat messages
  * @param  {Fsw~connectCallback} callback - callback invoked when connection successfully completes
  */
-Fsw.prototype.connect = function( cb ) {
+Fsw.prototype.connect = function() {
   var self = this ;
 
-  cb = cb || noop ;
   this.closing = false ;
-
-  function listener(callback, err) {
-    callback(err) ;
-  }
 
   async.series([
       function connectToFsw(callback) {
-        self._conn = new esl.Connection(self.address, self.port, self.secret, function() {
-          self._conn.removeListener('error', listener) ;
-          callback(null) ;
+        self._conn = new esl.Connection(self.address, self.port, self.secret, self.localAddress) ;
+        
+        self._conn
+        .on('esl::ready', function() { return callback(null) ;})
+        .on('error', function(err) { return callback(err); }) 
+        .on('esl::end', function() { return callback('acl prevents connection');})
+        .on('esl::event::auth::fail', function() {
+          return callback('authentication failed') ;
         }) ;
-        self._conn.once('error', listener.bind(self, callback)) ;
       }, 
       function queryProfile(callback) {
         self._conn.api('sofia status', function(res){
@@ -131,17 +142,24 @@ Fsw.prototype.connect = function( cb ) {
     ], 
     function( err ) {
       if( err ) {
-        console.error('Error connecting to freeswitch: ', err) ;
-        return cb(err) ;
-      }
 
-      self._conn.on('error', self._onError.bind(self) );
+        /* ignore timeout errors, because we'll be retrying anyways, and these will come in after we connect */
+        if( err.code === 'ETIMEDOUT') {
+          return ;
+        }
+        self.emit('error', err) ;
+
+        self._conn.removeAllListeners() ;
+        process.nextTick( function() {
+          self.connection_gone(err); 
+        }) ;
+        return ;
+      }
+      self.install_listeners() ;
+      self.online = true ;
 
       self._conn.subscribe(['HEARTBEAT']) ;
-      self._conn.on('esl::event::HEARTBEAT::*', self._onHeartbeat.bind(self)) ;
-
-      cb(null) ;
-      self.emit('connect', null) ;
+      self.emit('online') ;
     }
   ) ;
 } ;
@@ -161,6 +179,80 @@ Fsw.prototype.disconnect = function() {
   }
 } ;
 
+// private
+//retry 
+Fsw.prototype.initialize_retry_vars = function () {
+    this.retry_timer = null;
+    this.retry_totaltime = 0;
+    this.retry_delay = 150;
+    this.retry_backoff = 1.7;
+    this.attempts = 0;
+};
+Fsw.prototype.connection_gone = function (why) {
+  var self = this;
+
+  if( why === 'authentication failed') {
+    console.log('not reattempting connection due to auth failure: update config file with correct secret and retry') ;
+    return ;
+  }
+  if( why === 'acl prevents connection') {
+    console.log('not reattempting connection due to ACL configuration on freeswitch: update freeswitch conf and retry') ;
+    return ;
+  }
+  // If a retry is already in progress, just let that happen
+  if (this.retry_timer) {
+      return;
+  }
+
+  this.connected = false;
+  this.ready = false;
+
+  // If this is a requested shutdown, then don't retry
+  if (this.closing) {
+    this.retry_timer = null;
+    return;
+  }
+
+  var nextDelay = Math.floor(this.retry_delay * this.retry_backoff);
+  if (this.retry_max_delay !== null &amp;&amp; nextDelay > this.retry_max_delay) {
+      this.retry_delay = this.retry_max_delay;
+  } else {
+      this.retry_delay = nextDelay;
+  }
+
+  if (this.max_attempts &amp;&amp; this.attempts >= this.max_attempts) {
+      this.retry_timer = null;
+      console.log("Fsw#connection_gone: Couldn't get drachtio connection after " + this.max_attempts + " attempts.");
+      return;
+  }
+
+  this.attempts += 1;
+  this.emit("reconnecting", {
+      delay: self.retry_delay,
+      attempt: self.attempts
+  });
+  this.retry_timer = setTimeout(function () {
+
+      self.retry_totaltime += self.retry_delay;
+
+      if (self.connect_timeout &amp;&amp; self.retry_totaltime >= self.connect_timeout) {
+          self.retry_timer = null;
+          console.log("Fsw#connection_gone:: Couldn't get freeswitch connection after " + self.retry_totaltime + "ms.");
+          return;
+      }
+      self.connect() ;
+
+      self.retry_timer = null;
+  }, this.retry_delay);
+};
+Fsw.prototype.install_listeners = function() {
+  this._conn.removeAllListeners() ;
+  this._conn.on('error', this._onError.bind(this) ) ;
+  this._conn.on('esl::ready', this._onReady.bind(this) ) ;
+  this._conn.on('esl::end', this._onEnd.bind(this) ) ;
+  this._conn.on('esl::event::HEARTBEAT::*', this._onHeartbeat.bind(this)) ;
+} ;
+
 Fsw.prototype._onHeartbeat = function(evt) {
   this.maxSessions = parseInt( evt.getHeader('Max-Sessions')) ;
   this.currentSessions = parseInt( evt.getHeader('Session-Count')) ;
@@ -174,14 +266,25 @@ Fsw.prototype._onHeartbeat = function(evt) {
   console.log('%s: sessions (max/current/avail): %d/%d/%d, cpu idle: %d', this.id, this.maxSessions, 
     this.currentSessions, this.idleSessions, this.cpuIdle) ;
 } ;
-
-
+Fsw.prototype._onEnd = function() {
+  this.online = false ;
+  this.emit('offline') ;
+  this.initialize_retry_vars() ;
+  this.connection_gone('end') ;
+} ;
 Fsw.prototype._onError = function(err) {
-    this.emit('error', err);
+  console.log('%s: _onError: ', err) ;
+  this.emit('error', err);
+  this.initialize_retry_vars() ;
+  this.connection_gone(err) ;
 };
+Fsw.prototype._onReady = function() {
+  console.log('%s: connected and ready', this.id) ;
+} ;
 
 Fsw.prototype.toJSON = function() {
   return {
+    id: this.id,
     address: this.address,
     port: this.port,
     profile: this.profile
@@ -212,7 +315,7 @@ delegate(Fsw.prototype, '_conn')
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sun Nov 29 2015 15:18:09 GMT-0500 (EST) using the Minami theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Nov 30 2015 19:20:03 GMT-0500 (EST) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
