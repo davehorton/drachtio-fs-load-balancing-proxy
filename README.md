@@ -12,6 +12,8 @@ drachtio is an open-source, nodejs-based ecosystem for creating any kind of VoIP
 
 *Note:* API documentation on the key application classes [can be found here](http://davehorton.github.io/drachtio-fs-load-balancing-proxy/api/index.html)
 
+The prerequisites: you will need to install a [drachtio SIP server](https://github.com/davehorton/drachtio-server) somewhere in your network to handle the SIP message processing.
+
 The basics:
 
 ```bash
