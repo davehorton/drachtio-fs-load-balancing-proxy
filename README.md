@@ -4,7 +4,7 @@
 
 It is based on the high-performance [drachtio signaling resource framework](http://davehorton.github.io/drachtio-srf/), which in turn utilizes the [sofia](https://github.com/davehorton/sofia-sip") SIP stack.
 
-The need to load balance SIP traffic across a horizontal cluster of Freeswitch servers is a common requirement.  While other solutions exist (e.g. [Kamailio](http://www.kamailio.org/), the solution presented here may be more desirable to nodejs developers who prefer Javascript over proprietary and cryptic configuration-driven logic.  Additionally, the [underlying framework](http://davehorton.github.io/drachtio-srf/) provides tools to build a wider range of VoIP applications beyond simple SIP proxies.
+The need to load balance SIP traffic across a horizontal cluster of Freeswitch servers is a common requirement.  While other solutions exist (e.g. [Kamailio](http://www.kamailio.org/)), the solution presented here may be more desirable to nodejs developers who prefer Javascript over proprietary and cryptic configuration-driven logic.  Additionally, the [underlying framework](http://davehorton.github.io/drachtio-srf/) provides tools to build a wider range of VoIP applications beyond simple SIP proxies.
 
 drachtio is an open-source, nodejs-based ecosystem for creating any kind of VoIP server-based application: registrar, proxy, back-to-back user agent, and many others. Furthermore, when coupled with the drachtio [media resource function](http://davehorton.github.io/drachtio-fsmrf/), rich media-processing applications can be easily built as well.  Nodejs developers experienced with the [express](http://expressjs.com/) or [connect](https://github.com/senchalabs/connect) middleware frameworks will find drachtio very familiar.
 
@@ -15,9 +15,9 @@ drachtio is an open-source, nodejs-based ecosystem for creating any kind of VoIP
 The basics:
 
 ```bash
-  $ git clone git@github.com:davehorton/drachtio-fs-load-balancing-proxy.git
-  $ cd fs-load-balancing-proxy
-  $ npm install
+$ git clone git@github.com:davehorton/drachtio-fs-load-balancing-proxy.git
+$ cd fs-load-balancing-proxy
+$ npm install
 ```
 
 Next, copy <code>lib/config.example.js</code> to <code>config.js</code>, and edit to specify the coordinates of your freeswitch servers, as well as your drachtio server process.
@@ -25,7 +25,7 @@ Next, copy <code>lib/config.example.js</code> to <code>config.js</code>, and edi
 Then fire it up!
 
 ```bash
-  $ node app.js
+$ node app.js
 ```
 
 ### Hacking the code
