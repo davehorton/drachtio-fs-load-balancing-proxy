@@ -43,7 +43,7 @@ The code is pretty simple, and there isn't that much of it.  Here are a few note
 
 * [lib/fsw.js](https://github.com/davehorton/drachtio-fs-load-balancing-proxy/blob/master/lib/fsw.js) - this modules manages the connection to an indvidual freeswitch server.  It connects and receives heartbeat messages from the freeswitch server each 20 seconds.  Any time the connection is lost it will automatically begin retrying to connect.
 
-* [lib/connect.js](https://github.com/davehorton/drachtio-fs-load-balancing-proxy/blob/master/lib/config.example.js) - this is the configuration file.  You'll need to copy config.example.js to config.js to start with, then edit to your desires.  The file itself is documented so it won't be further described here.
+* [lib/config.js](https://github.com/davehorton/drachtio-fs-load-balancing-proxy/blob/master/lib/config.example.js) - this is the configuration file.  You'll need to copy config.example.js to config.js to start with, then edit to your desires.  The file itself is documented so it won't be further described here.
 
 
 ### License
