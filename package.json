@@ -18,7 +18,7 @@
     "drachtio": "davehorton/drachtio.git#0.3.6",
     "drachtio-srf": "davehorton/drachtio-srf.git#0.99.10",
     "lodash": "^3.10.1",
-    "modesl": "davehorton/node-esl.git#1.1.6",
+    "modesl": "davehorton/node-esl.git",
     "node-noop": "0.0.1",
     "range_check": "0.0.5"
   },
