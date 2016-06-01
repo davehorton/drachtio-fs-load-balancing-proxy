@@ -1,6 +1,6 @@
 {
   "name": "drachtio-fs-load-balancing-proxy",
-  "version": "0.99.0",
+  "version": "1.0.0",
   "description": "SIP load balancing proxy for freeswitch",
   "main": "app.js",
   "scripts": {
@@ -15,12 +15,14 @@
     "console-stamp": "^0.2.0",
     "debug": "^2.2.0",
     "delegates": "^0.1.0",
-    "drachtio": "davehorton/drachtio.git#0.3.6",
-    "drachtio-srf": "davehorton/drachtio-srf.git#0.99.10",
+    "drachtio": ">=1.0.0",
+    "drachtio-srf": ">=1.0.0",
+    "iptables": "0.0.4",
     "lodash": "^3.10.1",
     "modesl": "davehorton/node-esl.git",
     "node-noop": "0.0.1",
-    "range_check": "0.0.5"
+    "range_check": "0.0.5",
+    "winston": "^2.2.0"
   },
   "devDependencies": {
     "grunt": "~0.4.2",
