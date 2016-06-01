@@ -22,7 +22,7 @@
     "modesl": "davehorton/node-esl.git",
     "node-noop": "0.0.1",
     "range_check": "0.0.5",
-    "winston": "^2.2.0"
+    "winston": "^1.0.1"
   },
   "devDependencies": {
     "grunt": "~0.4.2",
