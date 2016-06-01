@@ -29,6 +29,10 @@ Then fire it up!
 ```bash
 $ node app.js
 ```
+### Blacklisting SIP scanners
+The proxy can optionally examine the SIP headers on incoming messages and based on regex patterns, add the source address to an iptables chain.  The most useful configuration is to have a specific iptables chain set up for this, e.g 'LOGDROP', and include it from the input chain.  Any requests that match the specified patterns will result in the sending address being added to that chain with a DROP action.  Review lib/blacklist-regex.json.example and copy it to lib/blacklist-regex.json, edit as needed.
+
+You can also optionally enforce a specific domain on requests, and blacklist any senders that generate requests for different domains.
 
 ### Hacking the code
 Contributors are welcome!  Feel free to fork the repo and send me pull requests for any features or bug fixes.
