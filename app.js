@@ -14,6 +14,9 @@ srf.connect(config.drachtioServer) ;
 
 srf.on('connect', function(err, hostport) {
   logger.info('connected to drachtio listening for SIP on %s', hostport) ;
+}) 
+.on('error', function(err){
+  logger.error('srf error: %s', err.message ) ;
 }) ;
 
 
